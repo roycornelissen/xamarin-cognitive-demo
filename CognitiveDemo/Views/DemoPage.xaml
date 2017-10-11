@@ -7,7 +7,9 @@
                 
             <Label Text="Face API" FontSize="20" TextColor="#0d0d0d" Margin="0,10,0,0"/>
             <Label Text="This API will check for faces in an image and will return information about the person, it's age, facial hair, eye color etc. it can also be used to identify faces or to check if 2 faces are of the same people" TextColor="#0d0d0d"/>
-            <Button Text="check face api" BackgroundColor="#F29100" TextColor="White" Command="{Binding CheckFaceApi}"/>
+            <Button Text="check face api" BackgroundColor="#F29100" TextColor="White" Command="{Binding CheckFaceApi}"/>    
+            <Image Source="{Binding FacePicture}" HeightRequest="100" />
+            <Label Text="{Binding FaceResult}" TextColor="#0d0d0d"/>
 
             <Label Text="Emotion API" FontSize="20" TextColor="#0d0d0d" Margin="0,10,0,0"/>
             <Label Text="This API will return emotions of people it will find in the image" TextColor="#0d0d0d"/>
@@ -34,6 +36,8 @@
             <Label Text="Text Analytics API" FontSize="20" TextColor="#0d0d0d" Margin="0,10,0,0"/>
             <Label Text="This API can be used to do sentiment analytics on texts and to extract topics from texts" TextColor="#0d0d0d"/>
             <Button Text="check text analytics api" BackgroundColor="#F29100" TextColor="White" Command="{Binding CheckTextAnalyticsApi}"/>
+            <Entry Text="{Binding TextAnalyticsText}"/>
+            <Label Text="{Binding TextAnalyticsResult}" TextColor="#0d0d0d"/>
     		</StackLayout>
         </ScrollView>
 	</ContentPage.Content>
