@@ -25,8 +25,10 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Services\FaceService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\EmotionService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ApiKeys.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\FaceApiClasses.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ApiKeys.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\IAudioRecorderService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\IFileHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Views\AboutPage.xaml" />

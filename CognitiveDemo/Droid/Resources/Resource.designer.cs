@@ -64,7 +64,6 @@ namespace CognitiveDemo.Droid
 			global::AndroidHUD.Resource.Styleable.ProgressWheel_ahTextColor = global::CognitiveDemo.Droid.Resource.Styleable.ProgressWheel_ahTextColor;
 			global::AndroidHUD.Resource.Styleable.ProgressWheel_ahTextSize = global::CognitiveDemo.Droid.Resource.Styleable.ProgressWheel_ahTextSize;
 			global::Plugin.LocalNotifications.Resource.Drawable.plugin_lc_smallicon = global::CognitiveDemo.Droid.Resource.Drawable.plugin_lc_smallicon;
-			global::Splat.Resource.String.library_name = global::CognitiveDemo.Droid.Resource.String.library_name;
 			global::Xamarin.Forms.Platform.Android.Resource.Attribute.actionBarSize = global::CognitiveDemo.Droid.Resource.Attribute.actionBarSize;
 		}
 		
