@@ -170,6 +170,7 @@
     <Reference Include="Microsoft.CognitiveServices.Speech.csharp">
       <HintPath>..\packages\Microsoft.CognitiveServices.Speech.1.1.0\lib\netstandard2.0\Microsoft.CognitiveServices.Speech.csharp.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\AboutAssets.txt" />
