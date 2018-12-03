@@ -17,6 +17,7 @@ using Microsoft.Azure.CognitiveServices.Language.TextAnalytics;
 using Microsoft.Azure.CognitiveServices.Language.TextAnalytics.Models;
 using System.Collections.Generic;
 using Microsoft.CognitiveServices.Speech;
+using CognitiveDemo.Services;
 
 namespace CognitiveDemo
 {
@@ -246,12 +247,42 @@ namespace CognitiveDemo
 
 			IsBusy = true;
 
+            var microphoneService = DependencyService.Get<IMicrophoneService>();
+            if (microphoneService != null)
+            {
+                await microphoneService.EnableMicrophone();
+            }
+
 			try
 			{
-				var speechConfig = SpeechConfig.FromEndpoint(new Uri(speechUri), ApiKeys.SpeechApiKey);
-				var client = new SpeechRecognizer(speechConfig);
-				var result = await client.RecognizeOnceAsync();
-				SpeechAnalyticsResult = $"{result.Text}";
+                var speechConfig = SpeechConfig.FromSubscription(ApiKeys.SpeechApiKey, "eastus");
+
+                using (var recognizer = new SpeechRecognizer(speechConfig))
+                {
+                    SpeechAnalyticsResult = "Say something...";
+				    var result = await recognizer.RecognizeOnceAsync();
+
+                    if (result.Reason == ResultReason.RecognizedSpeech)
+                    {
+                        SpeechAnalyticsResult = $"You said: '{result.Text}'";
+                    }
+                    else if (result.Reason == ResultReason.NoMatch)
+                    {
+                        SpeechAnalyticsResult = $"NOMATCH: Speech could not be recognized.";
+                    }
+                    else if (result.Reason == ResultReason.Canceled)
+                    {
+                        var cancellation = CancellationDetails.FromResult(result);
+                        SpeechAnalyticsResult = $"CANCELED: Reason={cancellation.Reason}";
+
+                        if (cancellation.Reason == CancellationReason.Error)
+                        {
+                            Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
+                            Console.WriteLine($"CANCELED: ErrorDetails={cancellation.ErrorDetails}");
+                            Console.WriteLine($"CANCELED: Did you update the subscription info?");
+                        }
+                    }                    
+                }
 			}
 			catch (Exception ex)
 			{

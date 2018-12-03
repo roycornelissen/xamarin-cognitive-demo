@@ -1,4 +1,4 @@
-﻿using System
+﻿using System;
 using AVFoundation;
 using Foundation;
 using Xamarin.Forms;
@@ -50,7 +50,7 @@ namespace CognitiveDemo.iOS.Services
 				return;
 			}
 
-			var localStorage = PCLStorage.FileSystem.Current.LocalStorage.Path;
+            var localStorage = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 			string audioFilePath = localStorage + "/Todo.wav";
 			Console.WriteLine("Audio file path: " + audioFilePath);
 

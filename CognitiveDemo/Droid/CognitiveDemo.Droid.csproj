@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CognitiveServices.Speech.1.1.0\build\Microsoft.CognitiveServices.Speech.props" Condition="Exists('..\packages\Microsoft.CognitiveServices.Speech.1.1.0\build\Microsoft.CognitiveServices.Speech.props')" />
   <Import Project="..\packages\Xamarin.Forms.3.4.0.1008975\build\Xamarin.Forms.props" Condition="Exists('..\packages\Xamarin.Forms.3.4.0.1008975\build\Xamarin.Forms.props')" />
@@ -195,11 +195,13 @@
     <AndroidResource Include="Resources\values\styles.xml" />
     <AndroidResource Include="Resources\xml\file_paths.xml" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Resources\xml\" />
-    <Folder Include="Services\" />
+    <ProjectReference Include="..\CognitiveDemo.Shared\CognitiveDemo.Shared.csproj">
+      <Project>{eddc2980-b6c2-420a-a09d-d156230ca1c3}</Project>
+      <Name>CognitiveDemo.Shared</Name>
+    </ProjectReference>
   </ItemGroup>
-  <Import Project="..\CognitiveDemo.projitems" Label="Shared" Condition="Exists('..\CognitiveDemo.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <Import Project="..\packages\Xamarin.Forms.3.4.0.1008975\build\Xamarin.Forms.targets" Condition="Exists('..\packages\Xamarin.Forms.3.4.0.1008975\build\Xamarin.Forms.targets')" />

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using CognitiveDemo.iOS.Services;
+using CognitiveDemo.Services;
 using Xamarin.Forms;
 
 [assembly: Dependency(typeof(FileHelper))]

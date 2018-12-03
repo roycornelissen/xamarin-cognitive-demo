@@ -16,8 +16,10 @@ namespace CognitiveDemo
 
         public CloudDataStore()
         {
-            client = new HttpClient();
-            client.BaseAddress = new Uri($"{App.BackendUrl}/");
+            client = new HttpClient
+            {
+                BaseAddress = new Uri($"{App.BackendUrl}/")
+            };
 
             items = new List<Item>();
         }

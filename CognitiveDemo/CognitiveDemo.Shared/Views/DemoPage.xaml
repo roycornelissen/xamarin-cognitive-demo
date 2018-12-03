@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="CognitiveDemo.DemoPage" Title="{Binding Title}" x:Name="BrowseItemsPage">
+    <ContentPage.Content>
+        <ScrollView>
+            <StackLayout Margin="10,10,10,10">
+                <Label Text="Vision" FontSize="30" TextColor="Black" Margin="0,20,0,0"/>
+
+                <Label Text="Face API" FontSize="20" TextColor="#0d0d0d" Margin="0,10,0,0"/>
+                <Label Text="This API will check for faces in an image and will return information about the person, it's age, facial hair, eye color etc. it can also be used to identify faces or to check if 2 faces are of the same people" TextColor="#0d0d0d"/>
+                <Button Text="check face api" BackgroundColor="#F29100" TextColor="White" Command="{Binding CheckFaceApi}"/>
+                <Image Source="{Binding FacePicture}" HeightRequest="100" />
+                <Label Text="{Binding FaceResult}" TextColor="#0d0d0d"/>
+
+                <Label Text="Emotion API" FontSize="20" TextColor="#0d0d0d" Margin="0,10,0,0"/>
+                <Label Text="This API will return emotions of people it will find in the image" TextColor="#0d0d0d"/>
+                <Button Text="check emotion api" BackgroundColor="#F29100" TextColor="White" Command="{Binding CheckEmotionApi}"/>
+                <Label Text="{Binding EmotionResult}" TextColor="#0d0d0d"/>
+                <Image Source="{Binding EmotionPicture}" HeightRequest="100" />
+
+                <Label Text="Speech" FontSize="30" TextColor="Black" Margin="0,20,0,0"/>
+                <Label Text="Speech to text API" FontSize="20" TextColor="#0d0d0d" Margin="0,10,0,0"/>
+                <Label Text="This API will turn recorded voices into text" TextColor="#0d0d0d"/>
+                <Button Text="check speech api" BackgroundColor="#F29100" TextColor="White" Command="{Binding CheckSpeechApi}"/>
+                <Label Text="{Binding SpeechAnalyticsResult}" TextColor="#0d0d0d"/>
+
+                <Label Text="Language" FontSize="30" TextColor="Black" Margin="0,20,0,0"/>
+                <Label Text="Text Analytics API" FontSize="20" TextColor="#0d0d0d" Margin="0,10,0,0"/>
+                <Label Text="This API can be used to do sentiment analytics on texts and to extract topics from texts" TextColor="#0d0d0d"/>
+                <Button Text="check text analytics api" BackgroundColor="#F29100" TextColor="White" Command="{Binding CheckTextAnalyticsApi}"/>
+                <Entry Text="{Binding TextAnalyticsText}"/>
+                <Label Text="{Binding TextAnalyticsResult}" TextColor="#0d0d0d"/>
+            </StackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage>
