@@ -261,34 +261,6 @@ namespace CognitiveDemo
 
 					SpeechAnalyticsResult = await speechService.Recognize();
 				}
-
-				//var speechConfig = SpeechConfig.FromSubscription(ApiKeys.SpeechApiKey, "eastus");
-
-        //        using (var recognizer = new SpeechRecognizer(speechConfig))
-        //        {
-				    //var result = await recognizer.RecognizeOnceAsync();
-
-                //    if (result.Reason == ResultReason.RecognizedSpeech)
-                //    {
-                //        SpeechAnalyticsResult = $"You said: '{result.Text}'";
-                //    }
-                //    else if (result.Reason == ResultReason.NoMatch)
-                //    {
-                //        SpeechAnalyticsResult = $"NOMATCH: Speech could not be recognized.";
-                //    }
-                //    else if (result.Reason == ResultReason.Canceled)
-                //    {
-                //        var cancellation = CancellationDetails.FromResult(result);
-                //        SpeechAnalyticsResult = $"CANCELED: Reason={cancellation.Reason}";
-
-                //        if (cancellation.Reason == CancellationReason.Error)
-                //        {
-                //            Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
-                //            Console.WriteLine($"CANCELED: ErrorDetails={cancellation.ErrorDetails}");
-                //            Console.WriteLine($"CANCELED: Did you update the subscription info?");
-                //        }
-                //    }                    
-                //}
 			}
 			catch (Exception ex)
 			{
