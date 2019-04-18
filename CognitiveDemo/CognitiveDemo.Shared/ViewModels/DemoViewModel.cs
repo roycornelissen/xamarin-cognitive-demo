@@ -16,7 +16,6 @@ using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
 using Microsoft.Azure.CognitiveServices.Language.TextAnalytics;
 using Microsoft.Azure.CognitiveServices.Language.TextAnalytics.Models;
 using System.Collections.Generic;
-using Microsoft.CognitiveServices.Speech;
 using CognitiveDemo.Services;
 
 namespace CognitiveDemo
@@ -255,34 +254,41 @@ namespace CognitiveDemo
 
 			try
 			{
-                var speechConfig = SpeechConfig.FromSubscription(ApiKeys.SpeechApiKey, "eastus");
+				var speechService = DependencyService.Get<ISpeechRecognitionService>();
+				if (speechService != null)
+				{
+					SpeechAnalyticsResult = "Say something...";
 
-                using (var recognizer = new SpeechRecognizer(speechConfig))
-                {
-                    SpeechAnalyticsResult = "Say something...";
-				    var result = await recognizer.RecognizeOnceAsync();
+					SpeechAnalyticsResult = await speechService.Recognize();
+				}
 
-                    if (result.Reason == ResultReason.RecognizedSpeech)
-                    {
-                        SpeechAnalyticsResult = $"You said: '{result.Text}'";
-                    }
-                    else if (result.Reason == ResultReason.NoMatch)
-                    {
-                        SpeechAnalyticsResult = $"NOMATCH: Speech could not be recognized.";
-                    }
-                    else if (result.Reason == ResultReason.Canceled)
-                    {
-                        var cancellation = CancellationDetails.FromResult(result);
-                        SpeechAnalyticsResult = $"CANCELED: Reason={cancellation.Reason}";
+				//var speechConfig = SpeechConfig.FromSubscription(ApiKeys.SpeechApiKey, "eastus");
 
-                        if (cancellation.Reason == CancellationReason.Error)
-                        {
-                            Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
-                            Console.WriteLine($"CANCELED: ErrorDetails={cancellation.ErrorDetails}");
-                            Console.WriteLine($"CANCELED: Did you update the subscription info?");
-                        }
-                    }                    
-                }
+        //        using (var recognizer = new SpeechRecognizer(speechConfig))
+        //        {
+				    //var result = await recognizer.RecognizeOnceAsync();
+
+                //    if (result.Reason == ResultReason.RecognizedSpeech)
+                //    {
+                //        SpeechAnalyticsResult = $"You said: '{result.Text}'";
+                //    }
+                //    else if (result.Reason == ResultReason.NoMatch)
+                //    {
+                //        SpeechAnalyticsResult = $"NOMATCH: Speech could not be recognized.";
+                //    }
+                //    else if (result.Reason == ResultReason.Canceled)
+                //    {
+                //        var cancellation = CancellationDetails.FromResult(result);
+                //        SpeechAnalyticsResult = $"CANCELED: Reason={cancellation.Reason}";
+
+                //        if (cancellation.Reason == CancellationReason.Error)
+                //        {
+                //            Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
+                //            Console.WriteLine($"CANCELED: ErrorDetails={cancellation.ErrorDetails}");
+                //            Console.WriteLine($"CANCELED: Did you update the subscription info?");
+                //        }
+                //    }                    
+                //}
 			}
 			catch (Exception ex)
 			{
@@ -327,11 +333,11 @@ namespace CognitiveDemo
 					Endpoint = baseApiUri
 				};
 
-				var input = new BatchInput
+				var input = new LanguageBatchInput
 				{
-					Documents = new List<Input> { new Input { Id = "1", Text = TextAnalyticsText } }
+					Documents = new List<LanguageInput> { new LanguageInput { Id = "1", Text = TextAnalyticsText } }
 				};
-				var lrResult = await client.DetectLanguageAsync(input);
+				var lrResult = await client.DetectLanguageAsync(languageBatchInput: input).ConfigureAwait(false);
 				var language = lrResult.Documents.First().DetectedLanguages.First().Name;
 				var languageCode = lrResult.Documents.First().DetectedLanguages.First().Iso6391Name;
 
@@ -347,7 +353,7 @@ namespace CognitiveDemo
 						}
 					}
 				};
-				var result = await client.SentimentAsync(sentimentInput);
+				var result = await client.SentimentAsync(multiLanguageBatchInput: sentimentInput).ConfigureAwait(false);
                 TextAnalyticsResult = $"Language: {language}, Sentiment Score: {result.Documents.First().Score}"; 
             }
             catch (Exception ex)

@@ -8,6 +8,7 @@ using Android.Views;
 using Android.Widget;
 using Android.OS;
 using Plugin.Permissions;
+using Plugin.CurrentActivity;
 
 namespace CognitiveDemo.Droid
 {
@@ -19,7 +20,9 @@ namespace CognitiveDemo.Droid
             TabLayoutResource = Resource.Layout.Tabbar;
             ToolbarResource = Resource.Layout.Toolbar;
 
-            base.OnCreate(bundle);
+			CrossCurrentActivity.Current.Init(this, bundle);
+
+			base.OnCreate(bundle);
 
             global::Xamarin.Forms.Forms.Init(this, bundle);
 
@@ -31,9 +34,9 @@ namespace CognitiveDemo.Droid
             base.OnActivityResult(requestCode, resultCode, data);
         }
 
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
-        {
-            PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
+		public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
+		{
+			PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+		}
     }
 }
