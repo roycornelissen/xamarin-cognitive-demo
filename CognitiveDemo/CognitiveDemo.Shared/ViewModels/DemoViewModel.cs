@@ -102,10 +102,7 @@ namespace CognitiveDemo
                 {
                     using (var photoStream = photo.GetStream())
                     {
-						BinaryReader binaryReader = new BinaryReader(photoStream);
-						var imagesBytes = binaryReader.ReadBytes((int)photoStream.Length);
-
-						HttpClient client = new HttpClient();
+						var client = new HttpClient();
 						client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", ApiKeys.FaceApiKey);
 
 						// Request parameters. A third optional parameter is "details".
@@ -113,7 +110,7 @@ namespace CognitiveDemo
 
 						HttpResponseMessage response;
 
-						using (ByteArrayContent content = new ByteArrayContent(imagesBytes))
+						using (var content = new StreamContent(photoStream))
                         {
                             //sent byte array to cognitive services API
 							content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
