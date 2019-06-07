@@ -297,7 +297,7 @@ namespace CognitiveDemo
             try
             {
 				var client = new TextAnalyticsClient(new ApiKeyServiceClientCredentials(ApiKeys.TextAnalyticsApiKey),
-													new DelegatingHandler[] { })
+													 new DelegatingHandler[] { })
 				{
 					Endpoint = baseApiUri
 				};
