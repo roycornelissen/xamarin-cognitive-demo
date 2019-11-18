@@ -78,7 +78,10 @@ namespace CognitiveDemo
                     photo = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
                     {
                         Name = "face.jpg",
-                        PhotoSize = PhotoSize.Small
+                        DefaultCamera = CameraDevice.Front,
+                        PhotoSize = PhotoSize.Small,
+                        RotateImage = true,
+                        AllowCropping = false
                     });
 
                     if (photo != null)
@@ -161,7 +164,10 @@ namespace CognitiveDemo
                     photo = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
                     {
                         Name = "emotion.jpg",
-                        PhotoSize = PhotoSize.Small
+                        DefaultCamera = CameraDevice.Front,
+                        PhotoSize = PhotoSize.Small,
+                        RotateImage = true,
+                        AllowCropping = false
                     });
 
                     if (photo != null)
@@ -178,26 +184,28 @@ namespace CognitiveDemo
                 {
                     using (var photoStream = photo.GetStream())
                     {
-                        var client = new FaceClient(new ApiKeyServiceClientCredentials(ApiKeys.FaceApiKey),
+                        using (var client = new FaceClient(new ApiKeyServiceClientCredentials(ApiKeys.FaceApiKey),
                                                     new DelegatingHandler[] { })
                         {
                             Endpoint = baseApiUri
-                        };
-
-                        var faceAttributes = new FaceAttributeType[] { FaceAttributeType.Emotion };
-                        var faceList = await client.Face.DetectWithStreamAsync(photoStream, true, false, faceAttributes);
-
-                        if (faceList.Any())
+                        })
                         {
-                            var emotion = faceList.FirstOrDefault().FaceAttributes.Emotion;
 
-                            var props = typeof(Emotion).GetProperties().Where(p => p.PropertyType == typeof(double));
+                            var faceAttributes = new FaceAttributeType[] { FaceAttributeType.Emotion };
+                            var faceList = await client.Face.DetectWithStreamAsync(photoStream, true, false, faceAttributes);
 
-                            var values = props.Select(p => $"{p.Name}: {p.GetValue(emotion)}");
+                            if (faceList.Any())
+                            {
+                                var emotion = faceList.FirstOrDefault().FaceAttributes.Emotion;
 
-                            EmotionResult = string.Join(Environment.NewLine, values);
+                                var props = typeof(Emotion).GetProperties().Where(p => p.PropertyType == typeof(double));
+
+                                var values = props.Select(p => $"{p.Name}: {p.GetValue(emotion)}");
+
+                                EmotionResult = string.Join(Environment.NewLine, values);
+                            }
+                            photo.Dispose();
                         }
-                        photo.Dispose();
                     }
                 }
             }
