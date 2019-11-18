@@ -1,22 +1,19 @@
+using AsyncAwaitBestPractices.MVVM;
+using CognitiveDemo.Services;
+using Microsoft.Azure.CognitiveServices.Language.TextAnalytics;
+using Microsoft.Azure.CognitiveServices.Vision.Face;
+using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
+using Plugin.Media;
+using Plugin.Media.Abstractions;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using Plugin.Media;
-using Plugin.Media.Abstractions;
 using System.Linq;
-
-using Xamarin.Forms;
-using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using Microsoft.Azure.CognitiveServices.Vision.Face;
-using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
-using Microsoft.Azure.CognitiveServices.Language.TextAnalytics;
-using Microsoft.Azure.CognitiveServices.Language.TextAnalytics.Models;
-using System.Collections.Generic;
-using CognitiveDemo.Services;
+using System.Threading.Tasks;
+using Xamarin.Forms;
 
 namespace CognitiveDemo
 {
@@ -24,13 +21,11 @@ namespace CognitiveDemo
     {
         const string baseApiUri = "https://eastus.api.cognitive.microsoft.com";
         const string faceApiUri = baseApiUri + "/face/v1.0/detect";
-        const string speechUri = baseApiUri + "/sts/v1.0/issuetoken";
-
         public ObservableCollection<Item> Items { get; set; }
-        public Command CheckFaceApi { get; set; }
-        public Command CheckEmotionApi { get; set; }
-        public Command CheckTextAnalyticsApi { get; set; }
-        public Command CheckSpeechApi { get; set; }
+        public IAsyncCommand CheckFaceApi { get; set; }
+        public IAsyncCommand CheckEmotionApi { get; set; }
+        public IAsyncCommand CheckTextAnalyticsApi { get; set; }
+        public IAsyncCommand CheckSpeechApi { get; set; }
 
         MediaFile photo;
 
@@ -44,10 +39,10 @@ namespace CognitiveDemo
         {
             Title = "Cognitive Demos";
             Items = new ObservableCollection<Item>();
-            CheckFaceApi = new Command(async () => await ExecuteCheckFaceApiCommand());
-            CheckEmotionApi = new Command(async () => await ExecuteCheckEmotionApiCommand());
-            CheckTextAnalyticsApi = new Command(async () => await ExecuteCheckTextAnalyticsApiCommand());
-            CheckSpeechApi = new Command(async () => await ExecuteCheckSpeechAnalyticsApiCommand());
+            CheckFaceApi = new AsyncCommand(ExecuteCheckFaceApiCommand);
+            CheckEmotionApi = new AsyncCommand(ExecuteCheckEmotionApiCommand);
+            CheckTextAnalyticsApi = new AsyncCommand(ExecuteCheckTextAnalyticsApiCommand);
+            CheckSpeechApi = new AsyncCommand(ExecuteCheckSpeechAnalyticsApiCommand);
         }
 
         #region Face API
@@ -101,7 +96,7 @@ namespace CognitiveDemo
                     using (var photoStream = photo.GetStream())
                     {
                         var client = new HttpClient();
-						client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", ApiKeys.FaceApiKey);
+                        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", ApiKeys.FaceApiKey);
 
                         // Request parameters. A third optional parameter is "details".
                         string requestParameters = "returnFaceId=true&returnFaceLandmarks=false&returnFaceAttributes=age,gender,headPose,smile,facialHair,glasses,hair,makeup,occlusion,accessories,blur,exposure,noise";
@@ -183,7 +178,7 @@ namespace CognitiveDemo
                 {
                     using (var photoStream = photo.GetStream())
                     {
-						var client = new FaceClient(new ApiKeyServiceClientCredentials(ApiKeys.FaceApiKey),
+                        var client = new FaceClient(new ApiKeyServiceClientCredentials(ApiKeys.FaceApiKey),
                                                     new DelegatingHandler[] { })
                         {
                             Endpoint = baseApiUri
@@ -294,13 +289,13 @@ namespace CognitiveDemo
 
             try
             {
-				var client = new TextAnalyticsClient(new ApiKeyServiceClientCredentials(ApiKeys.TextAnalyticsApiKey),
+                var client = new TextAnalyticsClient(new ApiKeyServiceClientCredentials(ApiKeys.TextAnalyticsApiKey),
                                                      new DelegatingHandler[] { })
                 {
-                    Endpoint = baseApiUri
+                    Endpoint = ApiKeys.TextAnalyticsEndpoint
                 };
 
-                var lrResult = await client.DetectLanguageAsync(TextAnalyticsText).ConfigureAwait(false);
+                var lrResult = await client.DetectLanguageAsync(TextAnalyticsText, countryHint: "US").ConfigureAwait(false);
                 var language = lrResult.DetectedLanguages.First().Name;
                 var languageCode = lrResult.DetectedLanguages.First().Iso6391Name;
 
