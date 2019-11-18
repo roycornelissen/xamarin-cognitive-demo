@@ -1,38 +1,33 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Threading.Tasks;
+using AsyncAwaitBestPractices.MVVM;
+using CognitiveDemo.Services;
+using Microsoft.Azure.CognitiveServices.Language.TextAnalytics;
+using Microsoft.Azure.CognitiveServices.Vision.Face;
+using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
 using Plugin.Media;
 using Plugin.Media.Abstractions;
+using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
-
-using Xamarin.Forms;
-using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using Microsoft.Azure.CognitiveServices.Vision.Face;
-using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
-using Microsoft.Azure.CognitiveServices.Language.TextAnalytics;
-using Microsoft.Azure.CognitiveServices.Language.TextAnalytics.Models;
-using System.Collections.Generic;
-using CognitiveDemo.Services;
+using System.Threading.Tasks;
+using Xamarin.Forms;
 
 namespace CognitiveDemo
 {
     public class DemoViewModel : BaseViewModel
     {
-		const string baseApiUri = "https://eastus.api.cognitive.microsoft.com";
-		const string faceApiUri = baseApiUri + "/face/v1.0/detect";
-		const string speechUri = baseApiUri + "/sts/v1.0/issuetoken";
+        const string baseApiUri = "https://eastus.api.cognitive.microsoft.com";
+        const string faceApiUri = baseApiUri + "/face/v1.0/detect";
+        public ObservableCollection<Item> Items { get; set; }
+        public IAsyncCommand CheckFaceApi { get; set; }
+        public IAsyncCommand CheckEmotionApi { get; set; }
+        public IAsyncCommand CheckTextAnalyticsApi { get; set; }
+        public IAsyncCommand CheckSpeechApi { get; set; }
 
-		public ObservableCollection<Item> Items { get; set; }
-        public Command CheckFaceApi { get; set; }
-        public Command CheckEmotionApi { get; set; }
-        public Command CheckTextAnalyticsApi { get; set; }
-		public Command CheckSpeechApi { get; set; }
-
-		MediaFile photo;
+        MediaFile photo;
 
         string error;
         public string Error
@@ -40,16 +35,14 @@ namespace CognitiveDemo
             get { return error; }
             set { SetProperty(ref error, value); }
         }
-
-
         public DemoViewModel()
         {
             Title = "Cognitive Demos";
             Items = new ObservableCollection<Item>();
-            CheckFaceApi = new Command(async () => await ExecuteCheckFaceApiCommand());
-            CheckEmotionApi = new Command(async () => await ExecuteCheckEmotionApiCommand());
-            CheckTextAnalyticsApi = new Command(async () => await ExecuteCheckTextAnalyticsApiCommand());
-			CheckSpeechApi = new Command(async () => await ExecuteCheckSpeechAnalyticsApiCommand());
+            CheckFaceApi = new AsyncCommand(ExecuteCheckFaceApiCommand);
+            CheckEmotionApi = new AsyncCommand(ExecuteCheckEmotionApiCommand);
+            CheckTextAnalyticsApi = new AsyncCommand(ExecuteCheckTextAnalyticsApiCommand);
+            CheckSpeechApi = new AsyncCommand(ExecuteCheckSpeechAnalyticsApiCommand);
         }
 
         #region Face API
@@ -69,7 +62,7 @@ namespace CognitiveDemo
         }
 
         async Task ExecuteCheckFaceApiCommand()
-		{
+        {
             if (IsBusy)
                 return;
 
@@ -85,7 +78,10 @@ namespace CognitiveDemo
                     photo = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
                     {
                         Name = "face.jpg",
-                        PhotoSize = PhotoSize.Small
+                        DefaultCamera = CameraDevice.Front,
+                        PhotoSize = PhotoSize.Small,
+                        RotateImage = true,
+                        AllowCropping = false
                     });
 
                     if (photo != null)
@@ -102,24 +98,24 @@ namespace CognitiveDemo
                 {
                     using (var photoStream = photo.GetStream())
                     {
-						var client = new HttpClient();
-						client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", ApiKeys.FaceApiKey);
+                        var client = new HttpClient();
+                        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", ApiKeys.FaceApiKey);
 
-						// Request parameters. A third optional parameter is "details".
-						string requestParameters = "returnFaceId=true&returnFaceLandmarks=false&returnFaceAttributes=age,gender,headPose,smile,facialHair,glasses,hair,makeup,occlusion,accessories,blur,exposure,noise";
+                        // Request parameters. A third optional parameter is "details".
+                        string requestParameters = "returnFaceId=true&returnFaceLandmarks=false&returnFaceAttributes=age,gender,headPose,smile,facialHair,glasses,hair,makeup,occlusion,accessories,blur,exposure,noise";
 
-						HttpResponseMessage response;
+                        HttpResponseMessage response;
 
-						using (var content = new StreamContent(photoStream))
+                        using (var content = new StreamContent(photoStream))
                         {
                             //sent byte array to cognitive services API
-							content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-							response = await client.PostAsync(faceApiUri + "?" + requestParameters, content);
+                            content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                            response = await client.PostAsync(faceApiUri + "?" + requestParameters, content);
 
-							//read response as string and deserialize
-							string contentString = await response.Content.ReadAsStringAsync();
-							FaceResult = JsonPrettyPrint(contentString);
-						}
+                            //read response as string and deserialize
+                            string contentString = await response.Content.ReadAsStringAsync();
+                            FaceResult = JsonPrettyPrint(contentString);
+                        }
                     }
                 }
             }
@@ -137,111 +133,116 @@ namespace CognitiveDemo
 
         #region Emotion API
 
-		ImageSource emotionPicture;
-		public ImageSource EmotionPicture
-		{
-			get { return emotionPicture; }
-			set { SetProperty(ref emotionPicture, value); }
-		}
+        ImageSource emotionPicture;
+        public ImageSource EmotionPicture
+        {
+            get { return emotionPicture; }
+            set { SetProperty(ref emotionPicture, value); }
+        }
 
-		string emotionResult;
-		public string EmotionResult
-		{
-			get { return emotionResult; }
-			set { SetProperty(ref emotionResult, value); }
-		}
+        string emotionResult;
+        public string EmotionResult
+        {
+            get { return emotionResult; }
+            set { SetProperty(ref emotionResult, value); }
+        }
 
-		async Task ExecuteCheckEmotionApiCommand()
-		{
-			if (IsBusy)
-				return;
+        async Task ExecuteCheckEmotionApiCommand()
+        {
+            if (IsBusy)
+                return;
 
-			IsBusy = true;
+            IsBusy = true;
 
-			try
-			{
-				await CrossMedia.Current.Initialize();
+            try
+            {
+                await CrossMedia.Current.Initialize();
 
-				// Take photo
-				if (CrossMedia.Current.IsCameraAvailable || CrossMedia.Current.IsTakePhotoSupported)
-				{
-					photo = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
-					{
-						Name = "emotion.jpg",
-						PhotoSize = PhotoSize.Small
-					});
+                // Take photo
+                if (CrossMedia.Current.IsCameraAvailable || CrossMedia.Current.IsTakePhotoSupported)
+                {
+                    photo = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
+                    {
+                        Name = "emotion.jpg",
+                        DefaultCamera = CameraDevice.Front,
+                        PhotoSize = PhotoSize.Small,
+                        RotateImage = true,
+                        AllowCropping = false
+                    });
 
-					if (photo != null)
-					{
-						EmotionPicture = ImageSource.FromStream(photo.GetStream);
-					}
-				}
-				else
-				{
-					error = "Camera unavailable.";
-				}
+                    if (photo != null)
+                    {
+                        EmotionPicture = ImageSource.FromStream(photo.GetStream);
+                    }
+                }
+                else
+                {
+                    error = "Camera unavailable.";
+                }
 
-				if (photo != null)
-				{
-					using (var photoStream = photo.GetStream())
-					{
-						var client = new FaceClient(new ApiKeyServiceClientCredentials(ApiKeys.FaceApiKey),
-													new DelegatingHandler[] { })
-						{
-							Endpoint = baseApiUri
-						};
+                if (photo != null)
+                {
+                    using (var photoStream = photo.GetStream())
+                    {
+                        using (var client = new FaceClient(new ApiKeyServiceClientCredentials(ApiKeys.FaceApiKey),
+                                                    new DelegatingHandler[] { })
+                        {
+                            Endpoint = baseApiUri
+                        })
+                        {
 
-						var faceAttributes = new FaceAttributeType[] { FaceAttributeType.Emotion };
-						var faceList = await client.Face.DetectWithStreamAsync(photoStream, true, false, faceAttributes);
+                            var faceAttributes = new FaceAttributeType[] { FaceAttributeType.Emotion };
+                            var faceList = await client.Face.DetectWithStreamAsync(photoStream, true, false, faceAttributes);
 
-						if (faceList.Any())
-						{
-							var emotion = faceList.FirstOrDefault().FaceAttributes.Emotion;
+                            if (faceList.Any())
+                            {
+                                var emotion = faceList.FirstOrDefault().FaceAttributes.Emotion;
 
-							var props = typeof(Emotion).GetProperties().Where(p => p.PropertyType == typeof(double));
+                                var props = typeof(Emotion).GetProperties().Where(p => p.PropertyType == typeof(double));
 
-							var values = props.Select(p => $"{p.Name}: {p.GetValue(emotion)}");
+                                var values = props.Select(p => $"{p.Name}: {p.GetValue(emotion)}");
 
-							EmotionResult = string.Join(Environment.NewLine, values);
-						}
-						photo.Dispose();
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine(ex);
-			}
-			finally
-			{
-				IsBusy = false;
-			}
-		}
+                                EmotionResult = string.Join(Environment.NewLine, values);
+                            }
+                            photo.Dispose();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region Speech API
+        #region Speech API
 
-		string speechAnalyticsText;
-		public string SpeechAnalyticsText
-		{
-			get { return speechAnalyticsText; }
-			set { SetProperty(ref speechAnalyticsText, value); }
-		}
+        string speechAnalyticsText;
+        public string SpeechAnalyticsText
+        {
+            get { return speechAnalyticsText; }
+            set { SetProperty(ref speechAnalyticsText, value); }
+        }
 
-		string speechAnalyticsResult;
-		public string SpeechAnalyticsResult
-		{
-			get { return speechAnalyticsResult; }
-			set { SetProperty(ref speechAnalyticsResult, value); }
-		}
+        string speechAnalyticsResult;
+        public string SpeechAnalyticsResult
+        {
+            get { return speechAnalyticsResult; }
+            set { SetProperty(ref speechAnalyticsResult, value); }
+        }
 
-		async Task ExecuteCheckSpeechAnalyticsApiCommand()
-		{
-			if (IsBusy)
-				return;
+        async Task ExecuteCheckSpeechAnalyticsApiCommand()
+        {
+            if (IsBusy)
+                return;
 
-			IsBusy = true;
+            IsBusy = true;
 
             var microphoneService = DependencyService.Get<IMicrophoneService>();
             if (microphoneService != null)
@@ -249,31 +250,31 @@ namespace CognitiveDemo
                 await microphoneService.EnableMicrophone();
             }
 
-			try
-			{
-				var speechService = DependencyService.Get<ISpeechRecognitionService>();
-				if (speechService != null)
-				{
-					SpeechAnalyticsResult = "Say something...";
+            try
+            {
+                var speechService = DependencyService.Get<ISpeechRecognitionService>();
+                if (speechService != null)
+                {
+                    SpeechAnalyticsResult = "Say something...";
 
-					SpeechAnalyticsResult = await speechService.Recognize();
-				}
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine(ex);
-			}
-			finally
-			{
-				IsBusy = false;
-			}
-		}
+                    SpeechAnalyticsResult = await speechService.Recognize();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
 
-		#endregion
+        #endregion
 
-		#region Text Analytics API
+        #region Text Analytics API
 
-		string textAnalyticsText;
+        string textAnalyticsText;
         public string TextAnalyticsText
         {
             get { return textAnalyticsText; }
@@ -296,34 +297,18 @@ namespace CognitiveDemo
 
             try
             {
-				var client = new TextAnalyticsClient(new ApiKeyServiceClientCredentials(ApiKeys.TextAnalyticsApiKey),
-													 new DelegatingHandler[] { })
-				{
-					Endpoint = baseApiUri
-				};
+                var client = new TextAnalyticsClient(new ApiKeyServiceClientCredentials(ApiKeys.TextAnalyticsApiKey),
+                                                     new DelegatingHandler[] { })
+                {
+                    Endpoint = ApiKeys.TextAnalyticsEndpoint
+                };
 
-				var input = new LanguageBatchInput
-				{
-					Documents = new List<LanguageInput> { new LanguageInput { Id = "1", Text = TextAnalyticsText } }
-				};
-				var lrResult = await client.DetectLanguageAsync(languageBatchInput: input).ConfigureAwait(false);
-				var language = lrResult.Documents.First().DetectedLanguages.First().Name;
-				var languageCode = lrResult.Documents.First().DetectedLanguages.First().Iso6391Name;
+                var lrResult = await client.DetectLanguageAsync(TextAnalyticsText, countryHint: "US").ConfigureAwait(false);
+                var language = lrResult.DetectedLanguages.First().Name;
+                var languageCode = lrResult.DetectedLanguages.First().Iso6391Name;
 
-				var sentimentInput = new MultiLanguageBatchInput
-				{
-					Documents = new List<MultiLanguageInput>
-					{
-						new MultiLanguageInput
-						{
-							Language = languageCode,
-							Text = TextAnalyticsText,
-							Id = "1"
-						}
-					}
-				};
-				var result = await client.SentimentAsync(multiLanguageBatchInput: sentimentInput).ConfigureAwait(false);
-                TextAnalyticsResult = $"Language: {language}, Sentiment Score: {result.Documents.First().Score}"; 
+                var result = await client.SentimentAsync(TextAnalyticsText, languageCode, showStats: true).ConfigureAwait(false);
+                TextAnalyticsResult = $"Language: {language}, Sentiment Score: {result.Score}"; 
             }
             catch (Exception ex)
             {
